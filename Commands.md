@@ -36,6 +36,29 @@ mkdir $runDir
 cd $runDir
 STAR --genomeDir $genomeDir --readFilesIn /home/ngs-01/workdir/Assignment2/ngs2-assignment-data/SRR8797509_1.part_001.part_001.fastq /home/ngs-01/workdir/Assignment2/ngs2-assignment-data/SRR8797509_2.part_001.part_001.fastq --runThreadN 4
 
+# 6-generate & sort BAM file
+
+
+samtools view -hbo sample.bam /home/ngs-01/workdir/Assignment2/2pass/Aligned.out.sam
+samtools sort sample.bam -o sample.sorted.bam
+ 
+
+# 7- Marking duplicates
+
+picard_path="/home/ngs-01/miniconda3/envs/ngs1/share/picard-2.19.0-0/"
+java -jar $picard_path/picard.jar MarkDuplicates I=sample.sorted.bam O=dedupped.bam  CREATE_INDEX=true VALIDATION_STRINGENCY=SILENT M=output.metrics
+
+# 8- Install GATK
+
+conda install -c bioconda gatk4 
+
+# 9- Split'N'Trim and 
+
+samtools faidx /home/ngs-01/workdir/sample_data/chr22_with_ERCC92.fa
+gatk CreateSequenceDictionary -R /home/ngs-01/workdir/sample_data/chr22_with_ERCC92.fa -O /home/ngs-01/workdir/sample_data/chr22_with_ERCC92.dict
+gatk SplitNCigarReads -R /home/ngs-01/workdir/sample_data/chr22_with_ERCC92.fa -I dedupped.bam -O split.bam
+
+
 
 
  
